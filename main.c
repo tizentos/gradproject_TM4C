@@ -140,6 +140,10 @@ int main(void){
 	OS_AddThread(&UltrasonicThread,STACKSIZE,3);
 	OS_AddThread(&Display,STACKSIZE,3);
   OS_AddPeriodicThread(&SendData,500*TIME_2MS,2);
+	
+		
+	// restart ESP module
+	ESP8266_OutString("-l 1");
 //   OS_Fifo_Init();
 //   char character;
 //   while(1){
