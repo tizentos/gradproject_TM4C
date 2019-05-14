@@ -33,6 +33,7 @@
 #include "UART2.h"
 #include "os.h"
 #include "REPLTerminal.h"
+#include "Ultrasonic.h"
 #include "ST7735Ext.h"
 // #include "esp8266.h"
 #include "LED.h"
@@ -40,47 +41,19 @@
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
 void WaitForInterrupt(void);  // low power mode
-// char Fetch[] = "POST /api/v1/jN80oNCqadNp1tvMQJcf/attributes HTTP/1.1\r\nHost:demo.thingsboard.io\r\nContent-Type: application/json\r\nCache-Control: no-cache\r\n\r\n{distance : 5}\r\n\r\n";
-char Fetch[] = "GET /api/data HTTP/1.1\r\nHost: bio-remote.herokuapp.com\r\nAccept: application/json\r\nKeep-Alive: timeout=10, max=1000\r\n\r\n";
-// 1) go to http://openweathermap.org/appid#use 
-// 2) Register on the Sign up page
-// 3) get an API key (APPID) replace the 1234567890abcdef1234567890abcdef with your APPID
 
-
-// char* server = "demo.thingsboard.io";
-char* server = "bio-remote.herokuapp.com";
-
-// int main1(void){  
-//   DisableInterrupts();
-//   PLL_Init(Bus80MHz);
-//   LED_Init();  
-//   Output_Init();       // UART0 only used for debugging
-//   printf("\n\r-----------\n\rSystem starting...\n\r");
-//   ESP8266_Init(115200);  // connect to access point, set up as client
-//   ESP8266_GetVersionNumber();
-//   while(1){
-//     ESP8266_GetStatus();
-//     if(ESP8266_MakeTCPConnection(server)){ // open socket in server
-//       LED_GreenOn();
-//       ESP8266_SendTCP(Fetch);
-//     }
-//     ESP8266_CloseTCPConnection();
-//     while(Board_Input()==0){// wait for touch
-//     }; 
-//     LED_GreenOff();
-//     LED_RedToggle();
-//   }
-// }
 
 bool GPIO_STATE[2] = {false,false};     //GPIO_STATE[0] = RedLed
 									 // GPIO_STATE[1] = GreenLed
 
-
 Sema4Type ESP_Terminal;
-static void delay(uint32_t N) {
-    for(int n = 0; n < N; n++)                         // N time unitss
-        for(int msec = 10000; msec > 0; msec--);       // 1 time unit
-}
+int CanMeasure = 1;
+float distance;
+
+float distanceTop;
+int CanMeasureTop = 1;
+int CanMeasureSide = 1;
+float distanceSide;
 
 void interpreter(void){
 	while(1){
@@ -123,13 +96,33 @@ void SendLEDStatus(){
 }
 void SendData(void){
     // ESP8266_OutString("Tosin ESP");
-	int data = 170; //dummy data 100cm
+	int data = distance; //dummy data 100cm
 	char buf[32];
 	//GPIO status builder
     sprintf(buf,"-s { \"distance\": %d}\r\n",data); 
 	OS_bWait(&ESP_Terminal);
 	ESP8266_OutString(buf);    //send status to ESP_8266;
 	OS_bSignal(&ESP_Terminal);
+}
+
+void UltrasonicThread(){
+	while(1){
+    if (CanMeasure){
+    SendPulse(4*PULSE_1US);
+	  CanMeasure = 0; 
+ }
+	}
+}
+
+void Display(){
+  while(1){
+
+		ST7735Ext_Message(FIRSTSCREEN, 1,0,"IP Address:",ST7735_Color565(0,255,0));
+
+    char distanceBuffer[30];
+    sprintf(distanceBuffer,"distance:  %3dcm", (int)distance);
+    ST7735Ext_Message(SECONDSCREEN, 2,0,distanceBuffer,ST7735_Color565(0,255,0));
+  }
 }
 
 int main(void){ 
@@ -141,8 +134,11 @@ int main(void){
 //   UART_Init();
   REPLTerminal_Init();
   ST7735Ext_Init();
+	Ultrasonic_Init();
   OS_InitSemaphore(&ESP_Terminal,1);
   OS_AddThread(&interpreter,STACKSIZE,3);
+	OS_AddThread(&UltrasonicThread,STACKSIZE,3);
+	OS_AddThread(&Display,STACKSIZE,3);
   OS_AddPeriodicThread(&SendData,500*TIME_2MS,2);
 //   OS_Fifo_Init();
 //   char character;

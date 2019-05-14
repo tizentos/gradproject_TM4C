@@ -210,7 +210,7 @@ int OS_AddPeriodicThread(void(*task)(void), unsigned long period, unsigned long 
   switch (NumPeriodicTaskCreated)
   {
     case 0:  
-      Timer0A_Init(task,period);
+      Timer1_Init(task,period,priority);
       NumPeriodicTaskCreated++;
       return 1;
     case 1:

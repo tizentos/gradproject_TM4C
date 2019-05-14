@@ -34,7 +34,7 @@ void REPLTerminal_Init(void){
     UART_Init();
     OutCRLF();
     // LED_Init();
-    REPLEvaluate("-d Welcome");
+    // REPLEvaluate("-d Welcome");
 }
 
 
@@ -122,6 +122,7 @@ void REPLEvaluate(char *inputString){
         //Display directory
         // eFile_Directory(&REPLPrint);
         REPLPrint(output);
+        ST7735Ext_Message(FIRSTSCREEN, 2,0,output,ST7735_Color565(0,255,0));
     }
     if (strcmp(FIRST_LED,command) == 0){
         //turn on/off LED
