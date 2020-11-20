@@ -1,27 +1,4 @@
 //***********************  main.c  ***********************
-// Program written by:
-// - Steven Prickett  steven.prickett@gmail.com
-//
-// Brief desicription of program:
-// - Initializes an ESP8266 module to act as a WiFi client
-//   and fetch weather data from openweathermap.org
-//
-//*********************************************************
-/* Modified by Jonathan Valvano
- March 28, 2017
- Out of the box: to make this work you must
- Step 1) Set parameters of your AP in lines 59-60 of esp8266.c
- Step 2) Change line 39 with directions in lines 40-42
- Step 3) Run a terminal emulator like Putty or TExasDisplay at
-         115200 bits/sec, 8 bit, 1 stop, no flow control
- Step 4) Set line 50 to match baud rate of your ESP8266 (9600 or 115200)
- Step 5) Some ESP8266 respond with "ok", others with "ready"
-         esp8266.c ESP8266_Reset function, try different strings like "ready" and "ok"
- Step 6) Some ESP8266 respond with "ok", others with "no change"
-         esp8266.c ESP8266_SetWifiMode function, try different strings like "no change" and "ok"
- Example
- AT+GMR version 0018000902 uses "ready" and "no change"
- AT+GMR version:0.60.0.0 uses "ready" and "ok"*/
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
